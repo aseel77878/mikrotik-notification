@@ -80,45 +80,253 @@
   </div>
 
 
-  <script>
+  <script type="module">
 
-    function enableNotifications() {
+    import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+
+    import {
+      getMessaging,
+      getToken,
+      onMessage
+    }
+    from "https://www.gstatic.com/firebasejs/12.7.0/firebase-messaging.js";
+
+
+    // ==============================
+    // إعدادات Firebase
+    // ==============================
+
+    const firebaseConfig = {
+
+      apiKey: "AIzaSyBngHPTFM-eC3k-g2nS1o9l-_hC2fZBhJg",
+
+      authDomain:
+      "mikrotik-notifications-86537.firebaseapp.com",
+
+      projectId:
+      "mikrotik-notifications-86537",
+
+      storageBucket:
+      "mikrotik-notifications-86537.firebasestorage.app",
+
+      messagingSenderId:
+      "216208799015",
+
+      appId:
+      "1:216208799015:web:7d5e1cb06b877b0d642502",
+
+      measurementId:
+      "G-DDWQ98LS8T"
+
+    };
+
+
+    // ==============================
+    // تشغيل Firebase
+    // ==============================
+
+    const app = initializeApp(firebaseConfig);
+
+    const messaging = getMessaging(app);
+
+
+    // ==============================
+    // مفتاح VAPID
+    // ==============================
+
+    const vapidKey =
+    "BDqvN6cuWEY6ygF1ay1tuI5nAxfYjCPlzrpg5oh5FpPY9Pmq7GJpauWFNB-kSKepIVw92uTqKM1WeeEPOM_EQhY";
+
+
+    // ==============================
+    // دالة تفعيل الإشعارات
+    // ==============================
+
+    window.enableNotifications = async function() {
+
+      const status =
+      document.getElementById("status");
+
+
+      // التحقق من دعم الإشعارات
 
       if (!("Notification" in window)) {
 
-        document.getElementById("status").innerHTML =
-        "متصفحك لا يدعم الإشعارات";
+        status.innerHTML =
+        "❌ متصفحك لا يدعم الإشعارات";
 
         return;
+
       }
 
-      Notification.requestPermission().then(function(permission) {
+
+      try {
+
+
+        // طلب السماح بالإشعارات
+
+        const permission =
+        await Notification.requestPermission();
+
 
         if (permission === "granted") {
 
-          document.getElementById("status").innerHTML =
-          "✅ تم تفعيل الإشعارات بنجاح";
 
-          new Notification("إشعارات ميكروتيك", {
+          status.innerHTML =
+          "⏳ جاري تفعيل إشعارات Firebase...";
 
-            body: "مرحباً بك، تم تفعيل إشعارات الشبكة بنجاح 🔔"
+
+          // ==============================
+          // تسجيل Service Worker
+          // ==============================
+
+          const registration =
+          await navigator.serviceWorker.register(
+            "./firebase-messaging-sw.js"
+          );
+
+
+          console.log(
+            "تم تسجيل Service Worker",
+            registration
+          );
+
+
+          // ==============================
+          // الحصول على FCM Token
+          // ==============================
+
+          const currentToken =
+          await getToken(messaging, {
+
+            vapidKey: vapidKey,
+
+            serviceWorkerRegistration:
+            registration
 
           });
+
+
+          if (currentToken) {
+
+
+            status.innerHTML =
+            "✅ تم تفعيل الإشعارات بنجاح";
+
+
+            console.log(
+              "FCM Token:"
+            );
+
+
+            console.log(
+              currentToken
+            );
+
+
+            // عرض إشعار تجريبي
+
+            new Notification(
+              "إشعارات ميكروتيك",
+              {
+
+                body:
+                "مرحباً بك، تم تفعيل إشعارات الشبكة بنجاح 🔔"
+
+              }
+            );
+
+
+          }
+
+          else {
+
+
+            status.innerHTML =
+            "❌ لم يتم الحصول على FCM Token";
+
+
+          }
+
 
         }
 
         else {
 
-          document.getElementById("status").innerHTML =
+
+          status.innerHTML =
           "❌ لم يتم السماح بالإشعارات";
+
 
         }
 
-      });
 
-    }
+      }
+
+      catch (error) {
+
+
+        console.error(
+          "حدث خطأ:",
+          error
+        );
+
+
+        status.innerHTML =
+        "❌ حدث خطأ أثناء تفعيل الإشعارات";
+
+
+      }
+
+
+    };
+
+
+    // ==============================
+    // استقبال الإشعار
+    // عندما يكون الموقع مفتوحاً
+    // ==============================
+
+    onMessage(
+      messaging,
+      (payload) => {
+
+
+        console.log(
+          "وصل إشعار:",
+          payload
+        );
+
+
+        const title =
+        payload.notification?.title
+        ||
+        "إشعارات ميكروتيك";
+
+
+        const body =
+        payload.notification?.body
+        ||
+        "وصل إشعار جديد";
+
+
+        new Notification(
+          title,
+          {
+
+            body: body
+
+          }
+        );
+
+
+      }
+    );
+
 
   </script>
+
 
 </body>
 
