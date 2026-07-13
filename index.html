@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>إشعارات ميكروتيك</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #07111f;
+      color: white;
+      text-align: center;
+      margin: 0;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #101d2e;
+      padding: 30px;
+      border-radius: 20px;
+    }
+
+    h1 {
+      color: #00d9ff;
+    }
+
+    .icon {
+      font-size: 70px;
+    }
+
+    button {
+      background: #00b8d4;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0097a7;
+    }
+
+    #status {
+      margin-top: 20px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="icon">🔔</div>
+
+    <h1>نظام إشعارات الشبكة</h1>
+
+    <p>
+      مرحباً بك في خدمة إشعارات شبكة ميكروتيك
+    </p>
+
+    <p>
+      قم بتفعيل الإشعارات لتصلك آخر أخبار الشبكة
+      والتنبيهات المهمة.
+    </p>
+
+    <button onclick="enableNotifications()">
+      تفعيل الإشعارات
+    </button>
+
+    <p id="status"></p>
+
+  </div>
+
+
+  <script>
+
+    function enableNotifications() {
+
+      if (!("Notification" in window)) {
+
+        document.getElementById("status").innerHTML =
+        "متصفحك لا يدعم الإشعارات";
+
+        return;
+      }
+
+      Notification.requestPermission().then(function(permission) {
+
+        if (permission === "granted") {
+
+          document.getElementById("status").innerHTML =
+          "✅ تم تفعيل الإشعارات بنجاح";
+
+          new Notification("إشعارات ميكروتيك", {
+
+            body: "مرحباً بك، تم تفعيل إشعارات الشبكة بنجاح 🔔"
+
+          });
+
+        }
+
+        else {
+
+          document.getElementById("status").innerHTML =
+          "❌ لم يتم السماح بالإشعارات";
+
+        }
+
+      });
+
+    }
+
+  </script>
+
+</body>
+
+</html>
